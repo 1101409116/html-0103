@@ -1,71 +1,106 @@
-var mass = [];
-var positionX = [];
-var positionY = [];
-var velocityX = [];
-var velocityY = [];
+// Program name: Bug Eyes
+// Developer: Vasu Goel
+/* Theme: This is a basic project in which the eyes follow wherever the mouse goes, but 
+		do not escape the eye sockets, can be a really cool and yet creepy addition to your page
+*/
+// Date: 18th November, 2017
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
-function setup() {
-  var canvas = createCanvas(500, 500);
+const eyeSize = 80;
+const eyeBallSize = 50;
+function setup() { 
+  //fullscreen();
+ //createCanvas(500, 500);
+  
+  var canvas = createCanvas(600, 200);
   canvas.parent('abc');
-	//createCanvas(windowWidth, windowHeight);
-	noStroke();
-	fill(64, 255, 255, 192);
+
+
+  left = new eyes(width/2 - 70);
+  right = new eyes(width/2 + 70);
+} 
+
+function draw() { 
+  background(220);
+  rectMode(CENTER);
+  fill(245, 224, 80);
+  rect(width/2, height/2, width, height); 
+  noStroke();
+  fill(30);
+  ellipse(width/2 - 70, height/2, 110, 110);
+  fill(245, 224, 80);
+  ellipse(width/2 - 70, height/2, 90, 90);
+  fill(30);
+  ellipse(width/2 + 70, height/2, 110, 110);
+  fill(245, 224, 80);
+  ellipse(width/2 + 70, height/2, 90, 90);
+  rectMode(CENTER);
+  fill(30);
+  rect(width/2, height/2, 40, 20);
+  if (left.click == 1 && left.sizeY > 0) {
+    left.sizeY -= 2;
+    if (left.sizeY <= 0) left.click = 2;
+  }
+  if (left.click == 2 && left.sizeY <= eyeBallSize) {
+    left.sizeY += 2;
+  }
+  if (left.click == 2 && left.sizeY >= eyeBallSize) 
+  {
+    left.sizeY = eyeBallSize;
+    left.click = 0;
+  }
+  if (right.click == 1 && right.sizeY > 0) {
+    right.sizeY -= 2;
+    if (right.sizeY <= 0) right.click = 2;
+  }
+  if (right.click == 2 && right.sizeY <= eyeBallSize) {
+    right.sizeY += 2;
+  }
+  if (right.click == 2 && right.sizeY >= eyeBallSize) 
+  {
+    right.sizeY = eyeBallSize;
+    right.click = 0;
+  }
+  left.drawEyes();
+  right.drawEyes();
+  let a = atan2(mouseY-height/2, mouseX-width/2);
+  let length = dist(mouseX, mouseY, width/2, height/2)/15;
+  left.rotate(a, length);
+  right.rotate(a, length);
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
-function draw() {
-	background(32);
-	
-	for (var particleA = 0; particleA < mass.length; particleA++) {
-		var accelerationX = 0, accelerationY = 0;
-		
-		for (var particleB = 0; particleB < mass.length; particleB++) {
-			if (particleA != particleB) {
-				var distanceX = positionX[particleB] - positionX[particleA];
-				var distanceY = positionY[particleB] - positionY[particleA];
-
-				var distance = sqrt(distanceX * distanceX + distanceY * distanceY);
-				if (distance < 1) distance = 1;
-
-				var force = (distance - 320) * mass[particleB] / distance;
-				accelerationX += force * distanceX;
-				accelerationY += force * distanceY;
-			}
-		}
-		
-		velocityX[particleA] = velocityX[particleA] * 0.99 + accelerationX * mass[particleA];
-		velocityY[particleA] = velocityY[particleA] * 0.99 + accelerationY * mass[particleA];
-	}
-	
-	for (var particle = 0; particle < mass.length; particle++) {
-		positionX[particle] += velocityX[particle];
-		positionY[particle] += velocityY[particle];
-		
-		ellipse(positionX[particle], positionY[particle], mass[particle] * 1000, mass[particle] * 1000);
-	}
+function mouseClicked()
+{
+  left.blink();
+  right.blink();
+  //console.log("CLicked");
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
-function addNewParticle() {
-	mass.push(random(0.003, 0.03));
-	positionX.push(mouseX);
-	positionY.push(mouseY);
-	velocityX.push(0);
-	velocityY.push(0);
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
-function mouseClicked() {
-	addNewParticle();
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
-function mouseDragged() {
-	addNewParticle();
+let eyes = function(x)
+{
+  this.click = 0;
+  this.x = x;
+  this.y = height/2;
+  this.xb = x;
+  this.yb = height/2;
+  this.sizeX = eyeBallSize;
+  this.sizeY = eyeBallSize;
+  this.drawEyes = function() {
+    fill(255);
+  	ellipse(this.x, height/2, eyeSize, eyeSize);
+    fill(0);
+    ellipse(this.xb, this.yb, this.sizeX, this.sizeY);
+  }
+  this.rotate = function(angle, length)
+  {
+    //console.log(angle, " ", length);
+    if (length < 20) this.xb = this.x + cos(angle)*length;
+    else this.xb = this.x + cos(angle)*30;
+    if (length < 20) this.yb = this.y + sin(angle)*length;
+    else this.yb = this.y + sin(angle)*30;
+    if (this.xb > this.x + 30 || this.xb < this.x - 30) this.xb = this.x + cos(angle)*30;
+    if (this.yb > this.y + 30 || this.yb < this.y - 30) this.yb = this.y + sin(angle)*30;
+  }
+  this.blink = function() {
+    this.click = 1;
+  }
 }
